@@ -15,7 +15,7 @@ services:
         - "traefik.http.services.reyes.loadbalancer.server.port=5000"
     ports:
       # Mapeo de puerto directo solicitado (1987)
-      - "1987:5000"
+      - "1001:5000"
     networks:
       - traefik-public
 
