@@ -3,7 +3,7 @@ version: "3.9"
 services:
   reyes-app:
     # aqui es donde la imagen debe de concidir 
-    image: ghcr.io/<Themesenjer>/examen_devops_25-11-25:reyes-1.0.5
+    image: ghcr.io/themesenjer/examen_devops_25-11-25:reyes-1.0.5
     deploy:
       replicas: 1
       labels:
