@@ -52,7 +52,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: 22  # Forzamos el puerto 22 aquí directamente
+          port: 1001  # Forzamos el puerto 22 aquí directamente
           source: "stack.yml"
           target: "/home/${{ secrets.VPS_USER }}/examen_reyes"
           timeout: 120s # Aumentamos a 2 minutos
