@@ -45,16 +45,18 @@ jobs:
 
       # --- DESPLIEGUE ---
       
-      - name: Copy stack to VPS
+      # 6. Despliegue al VPS (CD)
+      - name: Copy stack.yml to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_SSH_PORT }}  # Usa el puerto 22 del secreto
+          port: 22  # Forzamos el puerto 22 aquí directamente
           source: "stack.yml"
           target: "/home/${{ secrets.VPS_USER }}/examen_reyes"
-          timeout: 30s # Aumentamos tiempo de espera por si la red está lenta
+          timeout: 120s # Aumentamos a 2 minutos
+          command_timeout: 30m
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -62,7 +64,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_SSH_PORT }} # Usa el puerto 22 del secreto
+          port: 22
           script: |
             mkdir -p /home/${{ secrets.VPS_USER }}/examen_reyes
             cd /home/${{ secrets.VPS_USER }}/examen_reyes
