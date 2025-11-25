@@ -56,4 +56,4 @@ def api_tabla():
 
 if __name__ == '__main__':
     # Puerto 5000 interno (estándar Flask)
-    app.run(host='0.0.0.0', port=1001)
+    app.run(host='0.0.0.0', port=1002)
