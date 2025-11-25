@@ -3,6 +3,5 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-# Exponemos el puerto 5000 interno
-EXPOSE 5000
+EXPOSE 1001
 CMD ["python", "app.py"]
