@@ -1,0 +1,78 @@
+name: Examen CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - reyes # Se ejecuta solo en mi rama
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout y Setup
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 2. Pruebas Automatizadas (CI)
+      - name: Install dependencies and Test
+        run: |
+          pip install -r requirements.txt
+          pytest
+
+      # 3. Preparar variables (Minúsculas)
+      - name: Lowercase Repo Name
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+      # 4. Login a GHCR
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 5. Build & Push Imagen (reyes-1.0.5)
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ env.REPO_NAME }}:reyes-1.0.5
+          context: .
+
+      # 6. Despliegue al VPS (CD)
+      - name: Copy stack.yml to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "stack.yml"
+          target: "/home/${{ secrets.VPS_USER }}/examen_reyes"
+
+      - name: Deploy to Swarm via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/examen_reyes
+            
+            # Login en el VPS para bajar la imagen privada
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Bajar la imagen actualizada
+            docker pull ghcr.io/${{ env.REPO_NAME }}:reyes-1.0.5
+            
+            # Despliegue Limpio (Eliminar y Crear)
+            docker stack rm stack_reyes || true
+            sleep 10 # Esperar a que libere recursos
+            docker stack deploy -c stack.yml stack_reyes
